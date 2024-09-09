@@ -1,3 +1,4 @@
+import { Request } from "express";
 import { prisma } from "../libs/prisma";
 import { User } from "../types/user";
 import z from "zod";
@@ -77,6 +78,15 @@ export const findUserById = async (id: number) => {
         id: true,
         name: true,
         email: true,
+        Atividade: {
+          select: {
+            id: true,
+            titulo: true,
+            descricao: true,
+            data: true,
+            checked: true,
+          },
+        },
       },
       where: {
         id,
@@ -136,3 +146,109 @@ export const deleteUser = async (id: number) => {
     }
   }
 };
+
+// Função para criar uma tarefa.
+type Tarefa = {
+  userId: string;
+  titulo: string;
+  descricao: string;
+  data: string;
+};
+
+export const createTarefa = async (reqBody: Tarefa) => {
+  const userId = Number(reqBody.userId);
+  const data = new Date(reqBody.data);
+  const { titulo, descricao } = reqBody;
+  const tarefa = await prisma.atividades.create({
+    data: {
+      titulo,
+      descricao,
+      data,
+      userId,
+    },
+  });
+  return tarefa;
+};
+
+// Função para listar todas as tarefas.
+export const listTodasTarefas = async () => {
+  try {
+    const tarefas = await prisma.atividades.findMany({
+      select: {
+        id: true,
+        titulo: true,
+        descricao: true,
+        data: true,
+        checked: true,
+      },
+    });
+    if (!tarefas || tarefas.length === 0)
+      throw new Error("Nenhuma tarefa encontrada.");
+    return tarefas;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    } else {
+      return { error: "Erro ao buscar tarefas." };
+    }
+  }
+};
+
+// Função para listar tarefas de um usuário.
+export const listTarefas = async (id: number) => {
+  try {
+    const tarefas = await prisma.atividades.findMany({
+      select: {
+        id: true,
+        titulo: true,
+        descricao: true,
+        data: true,
+        checked: true,
+      },
+      where: {
+        userId: id,
+      },
+    });
+    if (!tarefas || tarefas.length === 0)
+      throw new Error("Nenhuma tarefa encontrada.");
+    return tarefas;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    } else {
+      return { error: "Erro ao buscar tarefas." };
+    }
+  }
+};
+
+// Função para atualizar uma tarefa.
+export const updateTarefa = async (reqBody: any) => {
+  const id = Number(reqBody.id);
+  const { titulo, descricao, data } = reqBody;
+  const checked = reqBody.checked === "true" ? true : false;
+
+  console.log(id, titulo, descricao, data, checked);
+  try {
+    const tarefa = await prisma.atividades.update({
+      where: {
+        id,
+      },
+      data: {
+        titulo,
+        descricao,
+        data,
+        checked,
+      },
+    });
+    if (!tarefa) throw new Error("Deu erro.");
+    return { data: `Tarefa ${tarefa.titulo} atualizada com sucesso!` };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: error.message };
+    } else {
+      return { error: "Erro ao atualizar tarefa." };
+    }
+  }
+};
+
+// Função para deletar uma tarefa.

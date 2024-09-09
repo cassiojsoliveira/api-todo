@@ -1,11 +1,15 @@
+import express, { Request, Response } from "express";
 import {
+  createTarefa,
   createUser,
   deleteUser,
   findUserById,
+  listTarefas,
   listUsers,
+  listTodasTarefas,
   updateUser,
+  updateTarefa,
 } from "./../models/user";
-import express, { Request } from "express";
 
 const todoRouter = express.Router();
 
@@ -28,7 +32,6 @@ todoRouter.get("/usuario", async (req, res) => {
   const user = await findUserById(Number(id));
   res.send(user);
 });
-export default todoRouter;
 
 // PATCH - Atualizar usuário.
 todoRouter.patch("/attusuario", async (req, res) => {
@@ -42,4 +45,32 @@ todoRouter.delete("/deleteusuario", async (req, res) => {
   const { id } = req.body;
   const user = await deleteUser(Number(id));
   res.send(user);
+});
+
+// POST - CRIAR TAREFA
+todoRouter.post("/criartarefa", async (req, res) => {
+  const tarefa = await createTarefa(req.body);
+  res.send({ tarefa });
+});
+
+export default todoRouter;
+
+// GET - LISTAR TODAS AS TAREFAS
+todoRouter.get("/tarefas", async (req, res) => {
+  const tarefas = await listTodasTarefas();
+  res.send({ tarefas });
+});
+
+// GET - LISTAR TAREFAS DE UM USUÁRIO
+todoRouter.get("/usuariotarefas", async (req, res) => {
+  const { id } = req.query;
+  const tarefas = await listTarefas(Number(id));
+  res.send({ tarefas });
+});
+
+// PATCH - ATUALIZAR TAREFA
+todoRouter.patch("/atttarefa", async (req, res) => {
+  const value = await req.body;
+  const attTarefa = await updateTarefa(value);
+  res.send({ attTarefa });
 });
