@@ -5,7 +5,7 @@ import z from "zod";
 
 // Função para criar um usuário.
 export const createUser = async (reqBody: User) => {
-  const { name, email, password } = reqBody;
+  const { name, email, password, job } = reqBody;
 
   const schema = z.object({
     name: z
@@ -38,11 +38,20 @@ export const createUser = async (reqBody: User) => {
           name,
           email,
           password,
+          job,
+        },
+        select: {
+          name: true,
+          email: true,
+          password: false,
+          job: true,
         },
       });
       return { data: `Usuário ${user.name} criado com sucesso!` };
     } catch (error: unknown) {
       if (error instanceof Error) {
+        return { error: error.message };
+      } else {
         return { error: "Usuário já cadastrado." };
       }
     }
@@ -83,7 +92,7 @@ export const findUserById = async (id: number) => {
             id: true,
             titulo: true,
             descricao: true,
-            data: true,
+            // data: true,
             checked: true,
           },
         },
@@ -115,8 +124,8 @@ export const updateUser = async ({ value }: any) => {
         id,
       },
       data: {
-        name,
-        email,
+        ...(name && { name }),
+        ...(email && { email }),
       },
     });
     return { data: `Usuário ${user.name} atualizado com sucesso!` };
@@ -163,7 +172,7 @@ export const createTarefa = async (reqBody: Tarefa) => {
     data: {
       titulo,
       descricao,
-      data,
+      // data,
       userId,
     },
   });
@@ -178,7 +187,7 @@ export const listTodasTarefas = async () => {
         id: true,
         titulo: true,
         descricao: true,
-        data: true,
+        // data: true,
         checked: true,
       },
     });
@@ -202,7 +211,7 @@ export const listTarefas = async (id: number) => {
         id: true,
         titulo: true,
         descricao: true,
-        data: true,
+        // data: true,
         checked: true,
       },
       where: {
@@ -236,7 +245,7 @@ export const updateTarefa = async (reqBody: any) => {
       data: {
         titulo,
         descricao,
-        data,
+        // data,
         checked,
       },
     });
@@ -252,3 +261,19 @@ export const updateTarefa = async (reqBody: any) => {
 };
 
 // Função para deletar uma tarefa.
+export const deleteTarefa = async (id: number) => {
+  try {
+    const tarefa = await prisma.atividades.delete({
+      where: {
+        id,
+      },
+    });
+    return { message: `Tarefa ${tarefa.titulo} deletada com sucesso!` };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { error: "Tarefa não encontrada." };
+    } else {
+      return { error: "Erro ao deletar tarefa." };
+    }
+  }
+};

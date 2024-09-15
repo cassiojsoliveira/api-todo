@@ -9,7 +9,9 @@ import {
   listTodasTarefas,
   updateUser,
   updateTarefa,
+  deleteTarefa,
 } from "./../models/user";
+import { send } from "process";
 
 const todoRouter = express.Router();
 
@@ -73,4 +75,11 @@ todoRouter.patch("/atttarefa", async (req, res) => {
   const value = await req.body;
   const attTarefa = await updateTarefa(value);
   res.send({ attTarefa });
+});
+
+// DELETE - DELETAR UMA TAREFA
+todoRouter.delete("/deletetarefa", async (req, res) => {
+  const id = Number(req.query.id);
+  const deleteTar = await deleteTarefa(id);
+  res.status(200).send(deleteTar);
 });

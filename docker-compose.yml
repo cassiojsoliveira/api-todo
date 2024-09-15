@@ -1,0 +1,33 @@
+services:
+  node-api:
+    build:
+      context: .
+    ports:
+      - 3000:3000
+    container_name: todo
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - rede-todo
+    depends_on:
+      - db-todo
+  db-todo:
+    image: postgres
+    restart: always
+    container_name: db-todo
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    networks:
+      - rede-todo
+volumes:
+  todo-vol:
+  db:
+networks:
+  rede-todo:
+    driver: bridge
